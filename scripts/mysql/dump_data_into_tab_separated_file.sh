@@ -13,6 +13,10 @@ if [ "x" == $DATA_DIR"x" -o "x" == $MYSQL_USERNAME"x" -o "x" == $MYSQL_PASSWORD"
 		exit
 fi
 
+if [ ! -d $DATA_DIR ];then
+		mkdir -p $DATA_DIR
+fi
+
 function dump_and_compress_table() {
     table_name=$1
     sql="SELECT * FROM "$table_name
