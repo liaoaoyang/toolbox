@@ -61,7 +61,9 @@ do
         continue
     fi
 
-    if [ `grep $dst_fn $done_file | wc -l` -ge 1 ];then
+    table_name=`echo $import_data_data_file | grep -oP ".+(?=\.data)"`
+
+    if [ `grep -P $table_name"\." $done_file | wc -l` -ge 1 ];then
         continue
     fi
 
@@ -78,7 +80,6 @@ do
     echo $data_file>>$log_file
     cp $data_file ./$dst_fn
     tar -xzf ./$dst_fn
-    table_name=`echo $import_data_data_file | grep -oP ".+(?=\.data)"`
     load_sql="LOAD DATA LOCAL INFILE \"$work_dir/$import_data_data_file\" INTO TABLE $table_name"
 	# MySQL 5.7
     #mysql  --local-infile=1 -h$MYSQL_HOST -P$MYSQL_PORT -u$MYSQL_USERNAME -p$MYSQL_PASSWORD $MYSQL_DATABASE -e "$load_sql"
