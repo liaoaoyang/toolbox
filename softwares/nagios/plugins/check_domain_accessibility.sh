@@ -2,8 +2,8 @@
 
 usage()
 {
-    echo "Usage: `basename $0` -d DOMAIN [-t TIMEOUT_S -p y|n]"
-    exit 3
+	echo "Usage: `basename $0` -d DOMAIN [-t TIMEOUT_S -p y|n]"
+	exit 3
 }
 
 do_curl()
