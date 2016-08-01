@@ -2,7 +2,7 @@
 
 usage()
 {
-    echo "Usage: `basename $0` -d DOMAIN [-t TIMEOUT_S]"
+    echo "Usage: `basename $0` -d DOMAIN [-t TIMEOUT_S -p y|n]"
     exit 3
 }
 
@@ -48,8 +48,9 @@ do_ping()
 
 DOMAIN=''
 TIMEOUT_S=1
+PING_FIRST="n"
 
-while getopts "d:t::" OPTION
+while getopts ":d:tp" OPTION
 do
     case $OPTION in
         d)
@@ -59,6 +60,9 @@ do
 			if [ ! -z $OPTARG ];then
             	TIMEOUT_S=$OPTARG
 			fi
+            ;;
+        p)
+            PING_FIRST="y"
             ;;
         \?)                       
             usage
@@ -71,11 +75,19 @@ if [ -z "$DOMAIN" ];then
     exit 3
 fi
 
-$(do_curl $DOMAIN $TIMEOUT_S)
+if [ $PING_FIRST = "y" ];then
+	$(do_ping $DOMAIN $TIMEOUT_S)
+else
+	$(do_curl $DOMAIN $TIMEOUT_S)
+fi
 check_result=$?
 
 if [ $check_result -ne 0 ];then
-	$(do_ping $DOMAIN $TIMEOUT_S)
+	if [ $PING_FIRST = "n" ];then
+		$(do_ping $DOMAIN $TIMEOUT_S)
+	else
+		$(do_curl $DOMAIN $TIMEOUT_S)
+	fi
 	check_result=$?
 fi
   
