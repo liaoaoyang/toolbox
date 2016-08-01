@@ -48,27 +48,35 @@ do_ping()
 
 DOMAIN=''
 TIMEOUT_S=1
-PING_FIRST="n"
+PING_FIRST=""
 
-while getopts ":d:tp" OPTION
+while getopts ":d:t::p::" OPTION
 do
     case $OPTION in
         d)
             DOMAIN=$OPTARG
             ;;
         t)
-			if [ ! -z $OPTARG ];then
-            	TIMEOUT_S=$OPTARG
-			fi
+            TIMEOUT_S=$OPTARG
             ;;
         p)
-            PING_FIRST="y"
+            PING_FIRST=$OPTARG
             ;;
         \?)                       
             usage
             ;;
     esac
 done
+
+if [ -z $TIMEOUT_S ];then
+    TIMEOUT_S=1
+fi
+
+if [ $PING_FIRST"x" = "nx" ];then
+    PING_FIRST="n"
+else
+    PING_FIRST="y"
+fi
 
 if [ -z "$DOMAIN" ];then 
     echo "You must specify DOMAIN with -d option"
@@ -80,6 +88,7 @@ if [ $PING_FIRST = "y" ];then
 else
 	$(do_curl $DOMAIN $TIMEOUT_S)
 fi
+
 check_result=$?
 
 if [ $check_result -ne 0 ];then
