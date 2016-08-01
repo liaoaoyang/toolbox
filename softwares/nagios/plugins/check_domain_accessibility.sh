@@ -34,7 +34,7 @@ do_ping()
 
 	timeout=$(($timeout*$package))
 
-	result=`ping -t $timeout -c $package $domain | grep '0.0% packet loss' | wc -l`
+	result=`ping -t $timeout -c $package $domain | egrep '\s0*\.?0%\spacket\sloss' | wc -l`
 
 	if [ $result -eq 1 ]; then
 		return 0
