@@ -46,7 +46,7 @@ do_ping()
 
 [ $# -eq 0 ] && usage
 
-DOMAIN=''
+DOMAIN=""
 TIMEOUT_S=1
 PING_FIRST=""
 
