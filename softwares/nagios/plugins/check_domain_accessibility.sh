@@ -36,7 +36,7 @@ do_ping()
 
 	result=`ping -t $timeout -c $package $domain | egrep '\s0*\.?0%\spacket\sloss' | wc -l`
 
-	if [ $result -eq 1 ]; then
+	if [ $result -eq 1 ];then
 		return 0
 	else
 		return 1
