@@ -11,16 +11,16 @@ date
 
 while read -r line
     do
-        log_type=`echo $line|awk -F '|' '{print $1}'`
+        log_type=`echo $line | awk -F '|' '{print $1}'`
 
         if [ "$log_type"x = "find"x ];then
-            log_path=`echo $line|awk -F '|' '{print $2}'`
+            log_path=`echo $line | awk -F '|' '{print $2}'`
             if [ ! -d $log_path ];then
                 continue
             fi
-            log_ctime=`echo $line|awk -F '|' '{print $3}'`
-            log_tar_time=`echo $line|awk -F '|' '{print $4}'`
-            log_exclude=`echo $line|awk -F '|' '{print "fake_file_name,"$5}'|tr "," "|"|sed 's/|$//'`
+            log_ctime=`echo $line | awk -F '|' '{print $3}'`
+            log_tar_time=`echo $line | awk -F '|' '{print $4}'`
+            log_exclude=`echo $line | awk -F '|' '{print "fake_file_name,"$5}'|tr "," "|"|sed 's/|$//'`
             if [ ! -z $log_tar_time ];then
                 file_list=`find ${log_path} -mtime +${log_tar_time} -type f | grep -vE "${log_exclude}" | grep -v tgz`
                 for f in $file_list
