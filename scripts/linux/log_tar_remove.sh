@@ -1,4 +1,17 @@
 #!/bin/bash
+
+################################################
+# config sample                                #
+# find|/home/www/logs/|7|2|keep,save           #
+#                                              #
+# separator is |                               #
+# [find] remove type, keep it                  #
+# [/home/www/logs/] log path                   #
+# [7] rm files before 7 days                   #
+# [2] tar files before 2 days                  #
+# [keep,save] keep file name with keep or save #
+################################################
+
 BASEDIR=$(dirname $0)
 config_path=$BASEDIR/log_tar_remove.conf
 
