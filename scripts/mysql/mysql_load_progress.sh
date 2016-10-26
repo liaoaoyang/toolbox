@@ -3,7 +3,7 @@
 LOAD_FILE_NAME=$1
 
 if [ ! -f $LOAD_FILE_NAME ];then
-	echo "Need filename"
+	echo "No such file"
 	exit
 fi
 
@@ -15,7 +15,7 @@ do
     fsize=`ls -l $LOAD_FILE_NAME | awk '{print $5}'`
 
     if [ -f  /proc/$pid/fdinfo/$fd ];then
-        read_pos=`cat /proc/$pid/fdinfo/$fd  | grep pos | awk "{print \\$2/$fsize}"`
+        read_pos=`cat /proc/$pid/fdinfo/$fd  | grep pos | awk "{print \\$2/$fsize*100\"%\"}"`
         echo $LOAD_FILE_NAME" "$read_pos
     fi
 done
