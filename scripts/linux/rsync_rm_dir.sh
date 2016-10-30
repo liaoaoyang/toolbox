@@ -2,11 +2,11 @@
 
 function do_delete()
 {
-		if [ -d /tmp/rsync_delete ];then
-			rm -rf /tmp/rsync_delete
-		fi
+	if [ -d /tmp/rsync_delete ];then
+		rm -rf /tmp/rsync_delete
+	fi
 
-		mkdir -p /tmp/rsync_delete && rsync --delete-before -a -H -v --progress --stats /tmp/rsync_delete/ $1
+	mkdir -p /tmp/rsync_delete && rsync --delete-before -a -H -v --progress --stats /tmp/rsync_delete/ $1
 }
 
 function usage()
