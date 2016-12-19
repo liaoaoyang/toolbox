@@ -7,7 +7,14 @@ if [ -z $ES_HOST ]; then
 	exit
 fi
 
-MASTER_NODE=`curl -s "http://$ES_HOST:9200/_cat/master?v" | tail -1 | awk '{print $4}'`
+ES_PORT=$2
+
+if [ -z $ES_PORT ]; then
+	echo "Need es port"
+	exit
+fi
+
+MASTER_NODE=`curl -s "http://$ES_HOST:$ES_PORT/_cat/master?v" | tail -1 | awk '{print $4}'`
 
 if [ -z $MASTER_NODE ]; then
 	echo "Failed to get master"
@@ -15,12 +22,12 @@ if [ -z $MASTER_NODE ]; then
 fi
 		
 
-for index in `curl  -s "http://$ES_HOST:9200/_cat/shards" | grep UNASSIGNED | awk '{print $1}' | sort | uniq`
+for index in `curl  -s "http://$ES_HOST:$ES_PORT/_cat/shards" | grep UNASSIGNED | awk '{print $1}' | sort | uniq`
 do
-    for shard in `curl  -s "http://$ES_HOST:9200/_cat/shards" | grep UNASSIGNED | grep $index | awk '{print $2}' | sort | uniq`
+    for shard in `curl  -s "http://$ES_HOST:$ES_PORT/_cat/shards" | grep UNASSIGNED | grep $index | awk '{print $2}' | sort | uniq`
 	do
         echo  $index $shard
-        curl -XPOST "http://$ES_HOST:9200/_cluster/reroute" -d "{
+        curl -XPOST "http://$ES_HOST:$ES_PORT/_cluster/reroute" -d "{
             \"commands\" : [ {
                   \"allocate\" : {
                       \"index\" : \"$index\",
