@@ -43,7 +43,7 @@ Bundle 'Lokaltog/powerline', {'rtp': 'powerline/bindings/vim/'}
 Bundle 'tomasr/molokai'
 Bundle 'vim-scripts/Tagbar'
 Bundle 'vim-scripts/The-NERD-tree'
-Bundle 'Valloric/YouCompleteMe'
+"Bundle 'Valloric/YouCompleteMe'
 
 "Powerline
 set laststatus=2
@@ -55,8 +55,8 @@ set guifont=Monaco\ for\ Powerline
 "Airline
 
 "YCM
-let g:ycm_global_ycm_extra_conf = "~/.vim/.ycm_extra_conf.py"
-nnoremap <leader>gg :YcmCompleter GoToDefinitionElseDeclaration<CR>
-nnoremap <leader>hh :YcmCompleter GoToInclude<CR>
-map <leader>bb <C-o>
+"let g:ycm_global_ycm_extra_conf = "~/.vim/.ycm_extra_conf.py"
+"nnoremap <leader>gg :YcmCompleter GoToDefinitionElseDeclaration<CR>
+"nnoremap <leader>hh :YcmCompleter GoToInclude<CR>
+"map <leader>bb <C-o>
 
