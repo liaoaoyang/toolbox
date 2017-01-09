@@ -30,6 +30,8 @@ imap <F4> <ESC>:q<CR>
 map <F3> <ESC>:TagbarToggle<CR> "TagBar
 imap <F3> <ESC>:TagbarToggle<CR>
 
+map <leader>, <ESC>zo<CR>
+map <leader>. <ESC>zc<CR>
 map <leader>t <ESC>:set paste<CR>
 map <leader>tt <ESC>:set nopaste<CR>
 imap <leader>t <ESC>:set paste<CR>
