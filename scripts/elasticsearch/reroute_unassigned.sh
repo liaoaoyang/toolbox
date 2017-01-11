@@ -43,7 +43,7 @@ do
         RESPONSE=`curl -s -w "HTTP_RESPONSE_CODE:%{http_code}" -XPOST "http://$ES_HOST:$ES_PORT/_cluster/reroute" -d "$POST_DATA"`
 
         if [ `echo $RESPONSE | grep -oP '(?<=HTTP_RESPONSE_CODE:)[0-9]+'`"x" != '200x' ];then
-            echo $RESPONSE
+            echo $RESPONSE | sed 's/HTTP_RESPONSE_CODE:[0-9]\{3\}//'
 		else
 			echo "OK"
         fi
