@@ -1,0 +1,7 @@
+local_root=LOCAL_ROOT
+write_enable=NO
+anon_umask=022
+anon_world_readable_only=NO
+anon_upload_enable=YES
+anon_mkdir_write_enable=YES
+anon_other_write_enable=YES
