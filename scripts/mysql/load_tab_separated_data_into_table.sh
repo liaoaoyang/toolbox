@@ -11,28 +11,28 @@ ibdata_file=$8
 ibdata_file_max_size_gb=$9
 
 if [ "x" == $work_dir"x" -o "x" == $data_dir"x" -o "x" == $MYSQL_USERNAME"x" -o "x" == $MYSQL_PASSWORD"x" -o "x" == $MYSQL_HOST"x" -o "x" == $MYSQL_PORT"x" -o "x" == $MYSQL_DATABASE"x" ];then
-	echo "Usage: ./.load_tab_separated_data_into_table.sh work_dir data_dir MYSQL_USERNAME MYSQL_PASSWORD MYSQL_HOST MYSQL_PORT MYSQL_DATABASE [ibdata_file] [ibdata_file_max_size_gb]"
+    echo "Usage: ./.load_tab_separated_data_into_table.sh work_dir data_dir MYSQL_USERNAME MYSQL_PASSWORD MYSQL_HOST MYSQL_PORT MYSQL_DATABASE [ibdata_file] [ibdata_file_max_size_gb]"
 fi
 
 if [ ! -d $data_dir ];then
-	echo "data_dir $data_dir not exits"
-	exit
+    echo "data_dir $data_dir not exits"
+    exit
 fi
 
 if [ "x" != $ibdata_file"x" ];then
-	if [ "x" == $ibdata_file_max_size_gb"x" ];then
-		echo "need ibdata file max size gb"	
-		exit
-	fi
+    if [ "x" == $ibdata_file_max_size_gb"x" ];then
+    	echo "need ibdata file max size gb"	
+    	exit
+    fi
 
-	if [ ! -f $ibdata_file ];then
-		echo "ibdata file $ibdata_file not exists"
-		exit
-	fi
+    if [ ! -f $ibdata_file ];then
+    	echo "ibdata file $ibdata_file not exists"
+    	exit
+    fi
 fi
 
 if [ ! -d $work_dir ];then
-	mkdir -p $work_dir
+    mkdir -p $work_dir
 fi
 
 data_files=`ls $2/*`
@@ -67,21 +67,21 @@ do
         continue
     fi
 
-	if [ "x" != $ibdata_file"x" ];then
-		ibfile_size=`ls -l $ibdata_file | cut -d ' ' -f 5`
+    if [ "x" != $ibdata_file"x" ];then
+    	ibfile_size=`ls -l $ibdata_file | cut -d ' ' -f 5`
 
-		if [ $ibfile_size -gt $ibdata_file_threshould ];then
-			date>>$log_file
-			echo $ibdata_file" reach size "$ibdata_file_threshould>>$log_file
-			exit
-		fi
-	fi
+    	if [ $ibfile_size -gt $ibdata_file_threshould ];then
+    		date>>$log_file
+    		echo $ibdata_file" reach size "$ibdata_file_threshould>>$log_file
+    		exit
+    	fi
+    fi
 
     echo $data_file>>$log_file
     cp $data_file ./$dst_fn
     tar -xzf ./$dst_fn
     load_sql="LOAD DATA LOCAL INFILE \"$work_dir/$import_data_data_file\" INTO TABLE $table_name"
-	# MySQL 5.7
+    # MySQL 5.7
     #mysql  --local-infile=1 -h$MYSQL_HOST -P$MYSQL_PORT -u$MYSQL_USERNAME -p$MYSQL_PASSWORD $MYSQL_DATABASE -e "$load_sql"
     mysql -h$MYSQL_HOST -P$MYSQL_PORT -u$MYSQL_USERNAME -p$MYSQL_PASSWORD $MYSQL_DATABASE -e "$load_sql"
 

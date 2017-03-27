@@ -2,28 +2,28 @@
 
 function do_delete()
 {
-	if [ -d /tmp/rsync_delete ];then
-		rm -rf /tmp/rsync_delete
-	fi
+    if [ -d /tmp/rsync_delete ];then
+    	rm -rf /tmp/rsync_delete
+    fi
 
-	mkdir -p /tmp/rsync_delete && rsync --delete-before -a -H -v --progress --stats /tmp/rsync_delete/ $1
+    mkdir -p /tmp/rsync_delete && rsync --delete-before -a -H -v --progress --stats /tmp/rsync_delete/ $1
 }
 
 function usage()
 {
-	echo "Usage:"
-	echo "sh ./rsync_rm_dir.sh /path/to/delete"
+    echo "Usage:"
+    echo "sh ./rsync_rm_dir.sh /path/to/delete"
 }
 
 dir_to_delete=$1
 
 if [ -z $dir_to_delete ];then
-	exit
+    exit
 fi
 
 if [ ! -d $dir_to_delete ];then
-	usage
-	exit
+    usage
+    exit
 fi
 
 while true; do

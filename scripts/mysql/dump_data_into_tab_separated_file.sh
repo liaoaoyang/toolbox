@@ -9,12 +9,12 @@ MYSQL_DATABASE=$6
 TABLE_KEYWORD=$7
 
 if [ "x" == $DATA_DIR"x" -o "x" == $MYSQL_USERNAME"x" -o "x" == $MYSQL_PASSWORD"x" -o "x" == $MYSQL_HOST"x" -o "x" == $MYSQL_PORT"x" -o "x" == $MYSQL_DATABASE"x" -o "x" == $TABLE_KEYWORD"x" ];then
-		echo "Usage: ./dump_data_into_tab_separated_file.sh DATA_DIR MYSQL_USERNAME MYSQL_PASSWORD MYSQL_HOST MYSQL_PORT MYSQL_DATABASE TABLE_KEYWORD"
-		exit
+    	echo "Usage: ./dump_data_into_tab_separated_file.sh DATA_DIR MYSQL_USERNAME MYSQL_PASSWORD MYSQL_HOST MYSQL_PORT MYSQL_DATABASE TABLE_KEYWORD"
+    	exit
 fi
 
 if [ ! -d $DATA_DIR ];then
-		mkdir -p $DATA_DIR
+    	mkdir -p $DATA_DIR
 fi
 
 function dump_and_compress_table() {
@@ -36,8 +36,8 @@ for table in $tables
 do
     if [ ! -z $TABLE_KEYWORD  -a `echo $table | grep -E "$TABLE_KEYWORD" | grep -v grep | wc -l` -ge 1 ];then
         dump_and_compress_table $table
-		continue
+    	continue
     fi
 
-	dump_and_compress_table $table
+    dump_and_compress_table $table
 done

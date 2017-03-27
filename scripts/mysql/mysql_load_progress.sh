@@ -3,8 +3,8 @@
 LOAD_FILE_NAME=$1
 
 if [ ! -f $LOAD_FILE_NAME ];then
-	echo "No such file"
-	exit
+    echo "No such file"
+    exit
 fi
 
 MYSQL_PIDS=`ps -ef | grep mysql | awk '{print $2}'`

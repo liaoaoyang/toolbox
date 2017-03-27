@@ -15,11 +15,11 @@ if [ $git_now_version \> $GIT_VERSION ]; then
 fi
 
 if [ ! -d $SOFTWARES_DIR ]; then
-	mkdir -p $SOFTWARES_DIR
+    mkdir -p $SOFTWARES_DIR
 fi
 
 if [ ! -d $DOWNLOADS_DIR ]; then
-	mkdir -p $DOWNLOADS_DIR
+    mkdir -p $DOWNLOADS_DIR
 fi
 
 git_tgz_file=$DOWNLOADS_DIR/"git-v"$GIT_VERSION".tar.gz"
