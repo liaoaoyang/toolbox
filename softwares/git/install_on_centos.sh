@@ -10,7 +10,7 @@ if [ ! -z $1 ]; then
     GIT_VERSION=$1
 fi
 
-if [ $git_now_version \> $GIT_VERSION ]; then
+if [ $git_now_version"x" \> $GIT_VERSION"x" ]; then
     echo "Git $git_now_version newer than this version"
 fi
 
@@ -38,11 +38,12 @@ git_src_dir=$DOWNLOADS_DIR/"git-"$GIT_VERSION
 if [ ! -d $git_src_dir ]; then
     cd $DOWNLOADS_DIR
     tar -xzvf "git-v"$GIT_VERSION".tar.gz"
-    cd $git_src_dir
 fi
 
-if [ `rpm -qa | grep -E 'curl-devel|expat-devel|gettext-devel|openssl-devel|zlib-devel' | wc -l` -ne 6 ]; then
-    yum install curl-devel expat-devel gettext-devel openssl-devel zlib-devel -y
+cd $git_src_dir
+
+if [ `rpm -qa | grep -E 'gcc|curl-devel|expat-devel|gettext-devel|openssl-devel|zlib-devel' | wc -l` -ne 6 ]; then
+    yum install gcc curl-devel expat-devel gettext-devel openssl-devel zlib-devel -y
 fi
 
 autoconf
