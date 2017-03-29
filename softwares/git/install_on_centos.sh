@@ -42,7 +42,7 @@ fi
 
 cd $git_src_dir
 
-if [ `rpm -qa | grep -E 'perl-ExtUtils-MakeMaker.x86_64|gcc|curl-devel|expat-devel|gettext-devel|openssl-devel|zlib-devel' | wc -l` -ne 7 ]; then
+if [ `rpm -qa | grep -E '^(perl-ExtUtils-MakeMaker.x86_64|gcc|curl-devel|expat-devel|gettext-devel|openssl-devel|zlib-devel)' | wc -l` -ne 7 ]; then
     yum install perl-ExtUtils-MakeMaker.x86_64 gcc curl-devel expat-devel gettext-devel openssl-devel zlib-devel -y
 fi
 
