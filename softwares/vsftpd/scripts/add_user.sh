@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# Thx to article: https://segmentfault.com/a/1190000003486196
+# Thx to article: https://wsgzao.github.io/post/vsftpd/
 #
 
 if [ ! -f /etc/centos-release ]; then
