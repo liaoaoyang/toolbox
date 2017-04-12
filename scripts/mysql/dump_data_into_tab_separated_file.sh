@@ -8,18 +8,18 @@ MYSQL_PORT=$5
 MYSQL_DATABASE=$6
 TABLE_KEYWORD=$7
 
-if [ "x" == $DATA_DIR"x" -o "x" == $MYSQL_USERNAME"x" -o "x" == $MYSQL_PASSWORD"x" -o "x" == $MYSQL_HOST"x" -o "x" == $MYSQL_PORT"x" -o "x" == $MYSQL_DATABASE"x" -o "x" == $TABLE_KEYWORD"x" ];then
-    	echo "Usage: ./dump_data_into_tab_separated_file.sh DATA_DIR MYSQL_USERNAME MYSQL_PASSWORD MYSQL_HOST MYSQL_PORT MYSQL_DATABASE TABLE_KEYWORD"
-    	exit
+if [ "x" == $DATA_DIR"x" -o "x" == $MYSQL_USERNAME"x" -o "x" == $MYSQL_PASSWORD"x" -o "x" == $MYSQL_HOST"x" -o "x" == $MYSQL_PORT"x" -o "x" == $MYSQL_DATABASE"x" ];then
+    echo "Usage: ./dump_data_into_tab_separated_file.sh DATA_DIR MYSQL_USERNAME MYSQL_PASSWORD MYSQL_HOST MYSQL_PORT MYSQL_DATABASE [TABLE_KEYWORD]"
+    exit
 fi
 
 if [ ! -d $DATA_DIR ];then
-    	mkdir -p $DATA_DIR
+    mkdir -p $DATA_DIR
 fi
 
 function dump_and_compress_table() {
     table_name=$1
-    sql="SELECT * FROM "$table_name
+    sql="SET NAMES utf8;SELECT * FROM "$table_name
     mysql -u$MYSQL_USERNAME -p$MYSQL_PASSWORD -h$MYSQL_HOST -P$MYSQL_PORT $MYSQL_DATABASE -N -e "$sql" > $DATA_DIR"/"$table_name".data"
     cd $DATA_DIR
 
@@ -34,10 +34,12 @@ tables=`mysql -u$MYSQL_USERNAME -p$MYSQL_PASSWORD -h$MYSQL_HOST -P$MYSQL_PORT $M
 
 for table in $tables
 do
-    if [ ! -z $TABLE_KEYWORD  -a `echo $table | grep -E "$TABLE_KEYWORD" | grep -v grep | wc -l` -ge 1 ];then
+    if [ "x" == $TABLE_KEYWORD"x" ];then
         dump_and_compress_table $table
     	continue
     fi
-
-    dump_and_compress_table $table
+    
+    if [ `echo $table | grep -E "$TABLE_KEYWORD" |  wc -l` -ge 1 ];then
+        dump_and_compress_table $table
+    fi
 done

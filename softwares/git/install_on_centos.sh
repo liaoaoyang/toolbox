@@ -42,8 +42,8 @@ fi
 
 cd $git_src_dir
 
-if [ `rpm -qa | grep -E '^(autoconf|perl-ExtUtils-MakeMaker|gcc|libcurl-devel|expat-devel|gettext-devel|openssl-devel|zlib-devel)' | wc -l` -ne 7 ]; then
-    yum install autoconf erl-ExtUtils-MakeMaker gcc curl-devel expat-devel gettext-devel openssl-devel zlib-devel -y
+if [ `rpm -qa | grep -E '^(autoconf|perl-ExtUtils-MakeMaker|gcc|libcurl-devel|expat-devel|gettext-devel|openssl-devel|zlib-devel)' | wc -l` -ne 8 ]; then
+    yum install autoconf perl-ExtUtils-MakeMaker gcc curl-devel expat-devel gettext-devel openssl-devel zlib-devel -y
 fi
 
 autoconf

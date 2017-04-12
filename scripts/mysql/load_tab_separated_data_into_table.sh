@@ -19,11 +19,13 @@ if [ ! -d $data_dir ];then
     exit
 fi
 
+ibdata_file_threshould=0
 if [ "x" != $ibdata_file"x" ];then
     if [ "x" == $ibdata_file_max_size_gb"x" ];then
     	echo "need ibdata file max size gb"	
     	exit
     fi
+    ibdata_file_threshould=$(($ibdata_file_max_size_gb * 1073741824))
 
     if [ ! -f $ibdata_file ];then
     	echo "ibdata file $ibdata_file not exists"
@@ -35,11 +37,15 @@ if [ ! -d $work_dir ];then
     mkdir -p $work_dir
 fi
 
-data_files=`ls $2/*`
+if [ $? -ne 0 ];then
+    echo "Failed to create $work_dir"
+    exit
+fi
+
+data_files=`ls $data_dir/*`
 done_file=$work_dir/done
 stop_file=$work_dir/stop
 log_file=$work_dir/log
-ibdata_file_threshould=$(($ibdata_file_max_size_gb * 1024 * 1024 * 1024))
 
 if [ ! -f $done_file ];then
     touch $done_file
@@ -55,12 +61,6 @@ do
 
     dst_fn=`basename $data_file`
     import_data_data_file=`echo $dst_fn | grep -oP ".+\.data(?=\.tgz)"`
-
-    if [ `echo $dst_fn | grep result | grep -v grep | wc -l` -lt 1 ];then
-        echo "$dst_fn is not result table do not load">>$log_file
-        continue
-    fi
-
     table_name=`echo $import_data_data_file | grep -oP ".+(?=\.data)"`
 
     if [ `grep -P $table_name"\." $done_file | wc -l` -ge 1 ];then
@@ -68,22 +68,25 @@ do
     fi
 
     if [ "x" != $ibdata_file"x" ];then
-    	ibfile_size=`ls -l $ibdata_file | cut -d ' ' -f 5`
+        ibfile_size=`ls -l $ibdata_file | cut -d ' ' -f 5`
 
     	if [ $ibfile_size -gt $ibdata_file_threshould ];then
-    		date>>$log_file
-    		echo $ibdata_file" reach size "$ibdata_file_threshould>>$log_file
-    		exit
+            date>>$log_file
+            echo $ibdata_file" reach size "$ibdata_file_threshould>>$log_file
+            exit
     	fi
     fi
 
     echo $data_file>>$log_file
     cp $data_file ./$dst_fn
     tar -xzf ./$dst_fn
-    load_sql="LOAD DATA LOCAL INFILE \"$work_dir/$import_data_data_file\" INTO TABLE $table_name"
-    # MySQL 5.7
-    #mysql  --local-infile=1 -h$MYSQL_HOST -P$MYSQL_PORT -u$MYSQL_USERNAME -p$MYSQL_PASSWORD $MYSQL_DATABASE -e "$load_sql"
-    mysql -h$MYSQL_HOST -P$MYSQL_PORT -u$MYSQL_USERNAME -p$MYSQL_PASSWORD $MYSQL_DATABASE -e "$load_sql"
+    load_sql="SET NAMES utf8;LOAD DATA LOCAL INFILE \"$work_dir/$import_data_data_file\" INTO TABLE $table_name"
+	version_sql="SELECT VERSION()"
+    if [ `mysql -h$MYSQL_HOST -P$MYSQL_PORT -u$MYSQL_USERNAME -p$MYSQL_PASSWORD $MYSQL_DATABASE -e "$version_sql" | grep "5.7" | grep -v grep | wc -l` -gt 0 ]; then 
+        mysql  --local-infile=1 -h$MYSQL_HOST -P$MYSQL_PORT -u$MYSQL_USERNAME -p$MYSQL_PASSWORD $MYSQL_DATABASE -e "$load_sql"
+    else
+         mysql -h$MYSQL_HOST -P$MYSQL_PORT -u$MYSQL_USERNAME -p$MYSQL_PASSWORD $MYSQL_DATABASE -e "$load_sql"
+	fi
 
     if [ $? -gt 0 ];then
         echo "mysql return not 0">>$log_file
