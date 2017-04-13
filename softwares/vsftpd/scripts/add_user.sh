@@ -49,7 +49,7 @@ fi
 
 PASSWORD_FILENAME="/etc/vsftpd/vuser_passwd.txt"
 
-if [ ! -f `wc -l $PASSWORD_FILENAME` ]; then
+if [ ! -e $PASSWORD_FILENAME ]; then
     touch $PASSWORD_FILENAME
 fi
 
@@ -83,6 +83,8 @@ if [ -z $LOCAL_ROOT ]; then
     exit 1
 fi
 
+LOCAL_ROOT_FOR_SED=`echo $LOCAL_ROOT | sed 's/\//\\\\\\//g'`
+
 USENANE_LINE_NO=`grep -on "^"$USERNAME"$" $PASSWORD_FILENAME | awk -F':' '{print $1}'`
 
 if [ $USENANE_LINE_NO"x" == "x" ]; then
@@ -101,7 +103,7 @@ db_load -T -t hash -f $PASSWORD_FILENAME /etc/vsftpd/vuser_passwd.db
 VUSER_CONF_PATH="/etc/vsftpd/vuser_conf"
 mkdir -p $VUSER_CONF_PATH 
 cp $CONF_PATH/user_template $VUSER_CONF_PATH/$USERNAME
-sed -i "s/LOCAL_ROOT/$LOCAL_ROOT/" $VUSER_CONF_PATH/$USERNAME
+sed -i "s/LOCAL_ROOT/$LOCAL_ROOT_FOR_SED/" $VUSER_CONF_PATH/$USERNAME
 mkdir -p $LOCAL_ROOT
 
 # reconfigure pam config
@@ -117,5 +119,9 @@ if [ -f /etc/vsftpd/vsftpd.conf ]; then
 fi
 
 cp $CONF_PATH/vsftpd.conf /etc/vsftpd/
+
+if [ ! -f /etc/vsftpd/chroot_list ]; then
+    touch /etc/vsftpd/chroot_list
+fi
 
 service vsftpd restart

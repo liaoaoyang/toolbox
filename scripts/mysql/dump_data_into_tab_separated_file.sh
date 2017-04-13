@@ -36,7 +36,7 @@ for table in $tables
 do
     if [ "x" == $TABLE_KEYWORD"x" ];then
         dump_and_compress_table $table
-    	continue
+   	    continue
     fi
     
     if [ `echo $table | grep -E "$TABLE_KEYWORD" |  wc -l` -ge 1 ];then
