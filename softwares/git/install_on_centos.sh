@@ -48,7 +48,14 @@ fi
 
 autoconf
 ./configure
-make 
+
+MAKE_J=`cat /proc/cpuinfo |grep -P 'processor\s+:\s\d+' | wc -l`
+
+if [ -z $MAKE_J ]; then
+    MAKE_J=1
+fi
+
+make "-j"$MAKE_J
 make install
 
 git_bins=`ls /usr/bin/git* | grep -v '.old'`
