@@ -1,6 +1,8 @@
 #!/bin/sh
 
-uuidgen|sed "s/\-//g"|xargs -I "{}" echo "obase=62;ibase=16;{}"|bc|sed "s/ 0/ /g" | awk 'BEGIN{r=""}{
+# bc on CentOS only allow uppercase letters
+
+uuidgen|sed "s/\-//g"|tr "[a-f]" "[A-F]"|xargs -I "{}" echo "obase=62;ibase=16;{}"|bc|sed "s/ 0/ /g" | awk 'BEGIN{r=""}{
 	for(i = 1; i <= NF; ++i) {
 		if ($i < 10) {
 			r=r""$i;
