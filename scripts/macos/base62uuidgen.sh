@@ -2,7 +2,7 @@
 
 # bc on CentOS only allow uppercase letters
 
-uuidgen|sed "s/\-//g"|tr "[a-f]" "[A-F]"|xargs -I "{}" echo "obase=62;ibase=16;{}"|bc|sed "s/ 0/ /g" | awk 'BEGIN{r=""}{
+uuidgen | tr "a-f" "A-F" | tr -d "-" | xargs -I "{}" echo "obase=62;ibase=16;{}" | bc | sed 's/0\([0-9]\)/\1/g' | awk 'BEGIN{r=""}{
 	for(i = 1; i <= NF; ++i) {
 		if ($i < 10) {
 			r=r""$i;
