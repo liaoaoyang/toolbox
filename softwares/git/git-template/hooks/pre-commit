@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh 
 #
 # A git hook to make sure user.email and user.mail in repository  exists before committing
 
@@ -12,17 +12,14 @@ push_url=$(git remote -v | awk '/push/ {print $2}' | head -1)
 
 my_username=`whoami`
 repo_user_info_config=`eval echo ~$my_username`"/.git_repo_user_info.conf"
-git_repo_user_info=""
 
-if [ -f $repo_user_info_config ]; then
-	git_repo_user_info=`cat $repo_user_info_config`
+if [ ! -f $repo_user_info_config ]; then
+	repo_user_info_config="/dev/null"
 fi
-
-echo $git_repo_user_info
 
 if [ -n "$push_url" ]; then
 	ret=""
-	echo $git_repo_user_info | awk -v push_url=$push_url -v global_name=$global_name -v global_email=$global_email -v repository_name=$repository_name -v repository_email=$repository_email 'BEGIN {
+	sort -dk 1 $repo_user_info_config | awk -v push_url=$push_url -v global_name=$global_name -v global_email=$global_email -v repository_name=$repository_name -v repository_email=$repository_email 'BEGIN {
 		default_name = global_name;
 		default_email = global_email;
 
@@ -41,7 +38,7 @@ if [ -n "$push_url" ]; then
 	}
 
 	{
-		if (push_url ~ "/"$1"/") {
+		if (index(push_url, $1) != 0) {
 			name = $2;
 			email = $3;
 		}
