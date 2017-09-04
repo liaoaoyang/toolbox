@@ -63,23 +63,29 @@ if (!file_exists($restClientPath))
 
 require $restClientPath;
 
-$getoptString  = 'h:p:S';
-$data          = getopt($getoptString);
+$getoptConfig  = [
+    'h:' => ['required' => true],
+    'p:' => ['required' => true],
+    'k:' => ['required' => false],
+    'S'  => ['required' => false],
+];
+$getoptString  = join('', array_keys($getoptConfig));
+$cmdArgv       = getopt($getoptString);
 $requiredCount = preg_match_all('#[a-zA-Z]:#', $getoptString, $requiredFields);
 
-foreach ($requiredFields[0] as $field)
+foreach ($getoptConfig as $field => $config)
 {
     $field = trim($field, ':');
 
-    if (!isset($data[$field]))
+    if (isset($config['required']) && $config['required'] && !isset($cmdArgv[$field]))
     {
         exit("Need -{$field}\n");
     }
 }
 
 $client     = new RestClient();
-$httpScheme = isset($data['S']) ? 'https' : 'http';
-$baseUrl    = "{$httpScheme}://{$data['h']}:{$data['p']}";
+$httpScheme = isset($cmdArgv['S']) ? 'https' : 'http';
+$baseUrl    = "{$httpScheme}://{$cmdArgv['h']}:{$cmdArgv['p']}";
 
 /**
  * get nodes stats
@@ -167,6 +173,11 @@ foreach ($shards as $shard)
 
     if (isset($shard[3]) && $shard[3] == 'UNASSIGNED')
     {
+        if (isset($cmdArgv['k']) && $cmdArgv['k'] && !preg_match("#{$cmdArgv['k']}#", $shard[0]))
+        {
+            continue;
+        }
+
         $unassignedShards[] = $shard;
     }
 }
@@ -178,7 +189,6 @@ $rerouteShardUrl = "{$baseUrl}/_cluster/reroute";
 
 foreach ($unassignedShards as $unassignedShard)
 {
-
     foreach ($nodesForReroute as $nodeForReroute)
     {
         echo "Try to reroute {$unassignedShard[0]} {$unassignedShard[1]} to $nodeForReroute\n";
@@ -204,5 +214,3 @@ foreach ($unassignedShards as $unassignedShard)
         }
     }
 }
-
-
