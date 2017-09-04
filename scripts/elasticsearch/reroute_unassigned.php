@@ -1,10 +1,59 @@
 <?php
 
+ini_set('memory_limit', '1G');
+
 /**
  * Thx to https://github.com/tcdent/php-restclient/
  *
  * Not finished yet
  */
+
+function is200($httpResponseStatusLine)
+{
+    if (is_array($httpResponseStatusLine))
+    {
+        $httpResponseStatusLine = $httpResponseStatusLine[0];
+    }
+
+    return strpos($httpResponseStatusLine, '200') !== false;
+}
+
+function getArrayValue($array, $path)
+{
+    $path = explode('.', $path);
+
+    $value = $array;
+
+    foreach ($path as $p)
+    {
+        if ($p == '' || !isset($value[$p]))
+        {
+            continue;
+        }
+
+        $value = $value[$p];
+    }
+
+    return $value;
+}
+
+function compareArrayByPath($v1, $v2, $path, $greaterReturn = 1)
+{
+    if (getArrayValue($v1, $path) > getArrayValue($v2, $path))
+    {
+        return $greaterReturn;
+    }
+    else
+    {
+        if (getArrayValue($v1, $path) < getArrayValue($v2, $path))
+        {
+            return -1 * $greaterReturn;
+        }
+    }
+
+    return 0;
+}
+
 $restClientPath = __DIR__ . '/restclient.php';
 
 if (!file_exists($restClientPath))
@@ -28,13 +77,14 @@ foreach ($requiredFields[0] as $field)
     }
 }
 
-$client = new RestClient();
+$client     = new RestClient();
+$httpScheme = isset($data['S']) ? 'https' : 'http';
+$baseUrl    = "{$httpScheme}://{$data['h']}:{$data['p']}";
 
 /**
  * get nodes stats
  */
-$httpScheme    = isset($data['S']) ? 'https' : 'http';
-$baseUrl       = "{$httpScheme}://{$data['h']}:{$data['p']}";
+
 $nodesStatsUrl = "{$baseUrl}/_nodes/stats";
 $nodes         = $client->get($nodesStatsUrl)->response;
 $nodes         = json_decode($nodes, true);
@@ -44,49 +94,24 @@ if (!$nodes || !isset($nodes['nodes']))
     exit("Failed to get nodes info\n");
 }
 
-uasort($nodes['nodes'], function ($node1, $node2) {
-    // JVM heap usage
-    if ($node1['jvm']['mem']['heap_used_percent'] > $node2['jvm']['mem']['heap_used_percent'])
-    {
-        return 1;
-    }
+$compareRules = [
+    ['path' => 'jvm.mem.heap_used_percent', 'greater' => 1],
+    ['path' => 'os.load_average', 'greater' => 1],
+    ['path' => 'os.mem.used_percent', 'greater' => 1],
+    ['path' => 'fs.total.free_in_bytes', 'greater' => -11],
+];
 
-    if ($node1['jvm']['mem']['heap_used_percent'] < $node2['jvm']['mem']['heap_used_percent'])
+uasort($nodes['nodes'], function ($node1, $node2) use ($compareRules) {
+    foreach ($compareRules as $compareRule)
     {
-        return -1;
-    }
+        $compareResult = compareArrayByPath($node1, $node2, $compareRule['path'], $compareRule['greater']);
 
-    // load
-    if ($node1['os']['load_average'] > $node2['os']['load_average'])
-    {
-        return 1;
-    }
+        if (0 == $compareResult)
+        {
+            continue;
+        }
 
-    if ($node1['os']['load_average'] < $node2['os']['load_average'])
-    {
-        return -1;
-    }
-
-    // mem
-    if ($node1['os']['mem']['used_percent'] > $node2['os']['mem']['used_percent'])
-    {
-        return 1;
-    }
-
-    if ($node1['os']['mem']['used_percent'] < $node2['os']['mem']['used_percent'])
-    {
-        return -1;
-    }
-
-    // disk
-    if ($node1['fs']['total']['free_in_bytes'] > $node2['fs']['total']['free_in_bytes'])
-    {
-        return -1;
-    }
-
-    if ($node1['fs']['total']['free_in_bytes'] < $node2['fs']['total']['free_in_bytes'])
-    {
-        return 1;
+        return $compareResult;
     }
 
     return 0;
@@ -110,3 +135,74 @@ foreach ($nodes['nodes'] as $nodeKey => $node)
         round($node['fs']['total']['free_in_bytes'] / 1024 / 1024 / 1024, 2),
     ]);
 }
+
+echo "\n";
+
+$nodesForReroute = [];
+
+foreach ($nodes['nodes'] as $nodeKey => $node)
+{
+    $nodesForReroute[] = $node['name'];
+}
+
+/**
+ * get unassigned shards
+ */
+$unassignedShardsUrl = "{$baseUrl}/_cat/shards";
+$resp                = $client->get($unassignedShardsUrl);
+$shards              = $resp->response;
+
+if (!is200($resp->response_status_lines))
+{
+    exit("ES return 503\n");
+}
+
+// git-2016.06.05             3 p STARTED     10   21.3kb 192.168.1.111 es_node_1
+$shards           = explode("\n", $shards);
+$unassignedShards = [];
+
+foreach ($shards as $shard)
+{
+    $shard = preg_split('#\s+#', $shard);
+
+    if (isset($shard[3]) && $shard[3] == 'UNASSIGNED')
+    {
+        $unassignedShards[] = $shard;
+    }
+}
+
+$shards = [];
+unset($shards);
+
+$rerouteShardUrl = "{$baseUrl}/_cluster/reroute";
+
+foreach ($unassignedShards as $unassignedShard)
+{
+
+    foreach ($nodesForReroute as $nodeForReroute)
+    {
+        echo "Try to reroute {$unassignedShard[0]} {$unassignedShard[1]} to $nodeForReroute\n";
+        $postData = [
+            'commands' => [
+                [
+                    'allocate' => [
+                        'index'         => $unassignedShard[0],
+                        'shard'         => $unassignedShard[1],
+                        'node'          => $nodeForReroute,
+                        'allow_primary' => true,
+                    ]
+                ]
+            ]
+        ];
+
+        $resp = $client->post($rerouteShardUrl, json_encode($postData));
+
+        if (is200($resp->response_status_lines))
+        {
+            echo "Success to reroute {$unassignedShard[0]} {$unassignedShard[1]} to $nodeForReroute\n";
+            break;
+        }
+    }
+}
+
+
