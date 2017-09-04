@@ -88,10 +88,35 @@ $httpScheme = isset($cmdArgv['S']) ? 'https' : 'http';
 $baseUrl    = "{$httpScheme}://{$cmdArgv['h']}:{$cmdArgv['p']}";
 
 /**
+ * check cluster status first
+ */
+$clusterHealthUrl = "{$baseUrl}/_cluster/health";
+$resp = $client->get($clusterHealthUrl);
+
+if (!is200($resp->response_status_lines))
+{
+    exit("ES not return 200\n");
+}
+
+$clusterHealth = json_decode($resp->response, true);
+
+if ($clusterHealth['status'] == 'green')
+{
+    exit("ES runs well, status is GREEN\n");
+}
+
+/**
  * get nodes stats
  */
 
 $nodesStatsUrl = "{$baseUrl}/_nodes/stats";
+$resp = $client->get($nodesStatsUrl);
+
+if (!is200($resp->response_status_lines))
+{
+    exit("ES not return 200\n");
+}
+
 $nodes         = $client->get($nodesStatsUrl)->response;
 $nodes         = json_decode($nodes, true);
 
@@ -160,7 +185,7 @@ $shards              = $resp->response;
 
 if (!is200($resp->response_status_lines))
 {
-    exit("ES return 503\n");
+    exit("ES not return 200\n");
 }
 
 // git-2016.06.05             3 p STARTED     10   21.3kb 192.168.1.111 es_node_1
