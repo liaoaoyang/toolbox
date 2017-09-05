@@ -8,6 +8,21 @@ ini_set('memory_limit', '1G');
  * Not finished yet
  */
 
+function usage($getoptConfig)
+{
+    echo 'Usage: php ' . __FILE__ . "\n";
+
+    foreach ($getoptConfig as $field => $config)
+    {
+        $field = trim($field, ':');
+
+        $usageText = "\t-{$field}";
+        $usageText .= isset($config['required']) && $config['required'] ? "\trequired" : "\toptional";
+        $usageText .= isset($config['description']) ? "\t{$config['description']}" : '';
+        echo "{$usageText}\n";
+    }
+}
+
 function is200($httpResponseStatusLine)
 {
     if (is_array($httpResponseStatusLine))
@@ -64,14 +79,36 @@ if (!file_exists($restClientPath))
 require $restClientPath;
 
 $getoptConfig  = [
-    'h:' => ['required' => true],
-    'p:' => ['required' => true],
-    'k:' => ['required' => false],
-    'S'  => ['required' => false],
+    'h:' => [
+        'required'    => true,
+        'description' => 'ES host'
+    ],
+    'p:' => [
+        'required'    => true,
+        'description' => 'ES port'
+    ],
+    'k:' => [
+        'required'    => false,
+        'description' => 'Filter by keyword'
+    ],
+    'S'  => [
+        'required'    => false,
+        'description' => 'Reach ES using HTTPS'
+    ],
+    'C'  => [
+        'required'    => false,
+        'description' => 'ES cluster status'
+    ],
 ];
 $getoptString  = join('', array_keys($getoptConfig));
 $cmdArgv       = getopt($getoptString);
-$requiredCount = preg_match_all('#[a-zA-Z]:#', $getoptString, $requiredFields);
+
+if (!$cmdArgv)
+{
+    usage($getoptConfig);
+    exit(0);
+}
+//$requiredCount = preg_match_all('#[a-zA-Z]:#', $getoptString, $requiredFields);
 
 foreach ($getoptConfig as $field => $config)
 {
@@ -79,7 +116,9 @@ foreach ($getoptConfig as $field => $config)
 
     if (isset($config['required']) && $config['required'] && !isset($cmdArgv[$field]))
     {
-        exit("Need -{$field}\n");
+        $exitText = "Need -{$field}";
+        $exitText .= isset($config['description']) ? " {$config['description']}" : '';
+        exit("{$exitText}\n");
     }
 }
 
@@ -91,7 +130,7 @@ $baseUrl    = "{$httpScheme}://{$cmdArgv['h']}:{$cmdArgv['p']}";
  * check cluster status first
  */
 $clusterHealthUrl = "{$baseUrl}/_cluster/health";
-$resp = $client->get($clusterHealthUrl);
+$resp             = $client->get($clusterHealthUrl);
 
 if (!is200($resp->response_status_lines))
 {
@@ -110,15 +149,15 @@ if ($clusterHealth['status'] == 'green')
  */
 
 $nodesStatsUrl = "{$baseUrl}/_nodes/stats";
-$resp = $client->get($nodesStatsUrl);
+$resp          = $client->get($nodesStatsUrl);
 
 if (!is200($resp->response_status_lines))
 {
     exit("ES not return 200\n");
 }
 
-$nodes         = $client->get($nodesStatsUrl)->response;
-$nodes         = json_decode($nodes, true);
+$nodes = $client->get($nodesStatsUrl)->response;
+$nodes = json_decode($nodes, true);
 
 if (!$nodes || !isset($nodes['nodes']))
 {
@@ -126,10 +165,22 @@ if (!$nodes || !isset($nodes['nodes']))
 }
 
 $compareRules = [
-    ['path' => 'jvm.mem.heap_used_percent', 'greater' => 1],
-    ['path' => 'os.load_average', 'greater' => 1],
-    ['path' => 'os.mem.used_percent', 'greater' => 1],
-    ['path' => 'fs.total.free_in_bytes', 'greater' => -11],
+    [
+        'path'    => 'jvm.mem.heap_used_percent',
+        'greater' => 1
+    ],
+    [
+        'path'    => 'os.load_average',
+        'greater' => 1
+    ],
+    [
+        'path'    => 'os.mem.used_percent',
+        'greater' => 1
+    ],
+    [
+        'path'    => 'fs.total.free_in_bytes',
+        'greater' => -1
+    ],
 ];
 
 uasort($nodes['nodes'], function ($node1, $node2) use ($compareRules) {
@@ -168,6 +219,11 @@ foreach ($nodes['nodes'] as $nodeKey => $node)
 }
 
 echo "\n";
+
+if (isset($cmdArgv['C']))
+{
+    exit(0);
+}
 
 $nodesForReroute = [];
 
