@@ -290,7 +290,8 @@ foreach ($unassignedShards as $unassignedShard)
 
         if (is200($resp->response_status_lines))
         {
-            echo "Success to reroute {$unassignedShard[0]} {$unassignedShard[1]} to $nodeForReroute\n";
+            $shardType = $unassignedShard[2] == 'p' ? 'PRIMARY' : 'REPLICA';
+            echo "Success to reroute {$unassignedShard[0]} {$unassignedShard[1]} [{$shardType}] to $nodeForReroute\n";
             break;
         }
     }
