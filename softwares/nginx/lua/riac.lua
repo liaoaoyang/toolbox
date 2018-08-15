@@ -1,5 +1,29 @@
 -- from https://gist.github.com/chrisboulton/6043871
 -- modify by ay
+-- 
+-- Nginx configuration:
+-- http section:
+--
+-- lua_shared_dict riac_ip_blacklist 4m;
+-- lua_shared_dict riac_ip_whitelist 4m;
+-- resolver 8.8.8.8;
+--
+-- server section:
+-- 
+-- set $riac_redis_host     "xxx.redis.rds.aliyuncs.com";
+-- set $riac_redis_port     6379;
+-- set $riac_redis_password "yyy";
+-- access_by_lua_file /usr/local/openresty/nginx/conf/lua/riac.lua;
+--
+-- Usage:
+-- mode == blacklist (by default)
+-- Block ip:
+-- redis-cli -h xxx.redis.rds.aliyuncs.com sadd riac_ip_blacklist 114.114.114.114
+-- Allow ip:
+-- redis-cli -h xxx.redis.rds.aliyuncs.com srem riac_ip_blacklist 114.114.114.114
+--
+-- Wait 60 seconds by default or use curl in localhost to refresh
+-- curl 'http://127.0.0.1/?riac_refresh_token=just_do_it'
 
 -- riac == redis ip access controller
 function riac_refresh_ip_list(ip_list, redis_key)
