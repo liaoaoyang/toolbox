@@ -17,6 +17,7 @@
 --
 -- Usage:
 -- mode == blacklist (by default)
+-- [blacklist] only block ip, [whitelist] only allow ip, [both] mode check whitelist first. 
 -- Block ip:
 -- redis-cli -h xxx.redis.rds.aliyuncs.com sadd riac_ip_blacklist 114.114.114.114
 -- Allow ip:
