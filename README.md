@@ -9,4 +9,4 @@ My IDEA color scheme.
 
 Screenshot:
 
-![LayST.jar](https://raw.githubusercontent.com/liaoaoyang/toolbox/master/public/images/IDEAColorSchemeLaySTSample.jpg)
+![LayST.jar](https://github.com/liaoaoyang/toolbox/blob/master/images/IDEAColorSchemeLaySTSample.jpg)
