@@ -1,4 +1,7 @@
 #!/bin/sh
+#############
+# usage:
+# curl -s https://raw.githubusercontent.com/liaoaoyang/toolbox/master/scripts/aliyun/setup_uid_and_machine_group.sh | sh -s -- 1234567890 group1
 
 uname -a | grep -i Linux 2>&1 >> /dev/null
 
