@@ -2,6 +2,8 @@
 #############
 # usage:
 # curl -s https://raw.githubusercontent.com/liaoaoyang/toolbox/master/scripts/aliyun/setup_uid_and_machine_group.sh | sh -s -- 1234567890 group1
+# 
+# read more at : https://help.aliyun.com/document_detail/49007.html
 
 uname -a | grep -i Linux 2>&1 >> /dev/null
 
@@ -13,7 +15,7 @@ fi
 UID=$1
 MACHINE_GROUP=$2
 
-echo $UID | grep -P '[1-9][0-9]+' 2>&1 >> /dev/null
+echo $UID | grep -P '^[1-9][0-9]+$' 2>&1 >> /dev/null
 
 if [ $? -ne 0 ];then
     echo "Invalid uid"
@@ -27,7 +29,7 @@ if [ $? -ne 0 ];then
 	exit 1
 fi
 
-uid_file="/etc/ilogtail/user"$UID
+uid_file="/etc/ilogtail/users/"$UID
 echo "creating "$uid_file
 sudo touch $uid_file
 user_defined_id_file="/etc/ilogtail/user_defined_id"
